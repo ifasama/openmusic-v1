@@ -15,6 +15,9 @@ class SongHandler {
   async postSongHandler(req, h) {
     try {
       this._validator.validateSongPayload(req.payload);
+      // katanya destructuring tidak diperlukan karena redundan dengan
+      // di services, tapi saat dihilangkan, muncul problem
+      // karena variable tidak diinisiasi
       const {
         title, year, performer, genre, duration, albumId,
       } = req.payload;

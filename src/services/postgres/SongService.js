@@ -20,7 +20,7 @@ class SongService {
     };
 
     const result = await this._pool.query(query);
-    console.log(result);
+    // console.log(result);
 
     if (!result.rows[0].id) {
       throw new InvariantError('lagu gagal ditambahkan');
@@ -35,7 +35,7 @@ class SongService {
         values: [`%${title}%`, `%${performer}%`],
       };
       const result = await this._pool.query(query);
-      return result.rows.map(mapDBToModel);
+      return result.rows;
     }
     if (title !== undefined) {
       const query = {
@@ -94,7 +94,7 @@ class SongService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Lagu gagal dihapus.');
     }
   }

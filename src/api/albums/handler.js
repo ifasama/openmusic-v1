@@ -5,6 +5,7 @@ class AlbumsHandler {
     this._service = service;
     this._validator = validator;
 
+    // saran untuk menggunakan autobind (tapi nyoba nggak bisa)
     this.postAlbumHandler = this.postAlbumHandler.bind(this);
     this.getAlbumByIdHandler = this.getAlbumByIdHandler.bind(this);
     this.putAlbumByIdHandler = this.putAlbumByIdHandler.bind(this);
@@ -26,7 +27,7 @@ class AlbumsHandler {
       res.code(201);
       return res;
     } catch (error) {
-      console.log(error);
+      // saran menggunakan onPreResponse tapi sudah dicoba tidak berjalan
       if (error instanceof ClientError) {
         const res = h.response({
           status: 'fail',
@@ -58,7 +59,6 @@ class AlbumsHandler {
         },
       };
     } catch (error) {
-      console.log(error);
       if (error instanceof ClientError) {
         const res = h.response({
           status: 'fail',
@@ -117,7 +117,6 @@ class AlbumsHandler {
         message: 'Album berhasil dihapus',
       };
     } catch (error) {
-      console.log(error);
       if (error instanceof ClientError) {
         const res = h.response({
           status: 'fail',

@@ -1,7 +1,6 @@
 {
   "name": "openmusic-v1",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -13,16 +12,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "os": [
-    "darwin",
-    "won32"
-  ],
-  "arch": [
-    "any",
-    "x64"
-  ],
   "dependencies": {
     "@hapi/hapi": "^21.1.0",
+    "@hapi/jwt": "^3.2.0",
+    "bcrypt": "^5.1.0",
     "dotenv": "^16.0.3",
     "env": "0.0.2",
     "joi": "^17.7.0",
@@ -36,5 +29,6 @@
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.27.5",
     "nodemon": "^2.0.20"
-  }
+  },
+  "description": ""
 }

@@ -35,6 +35,9 @@ class AlbumsService {
       text: 'SELECT * FROM songs WHERE album_id = $1',
       values: [id],
     };
+    /* Agar code menjadi lebih clean, seharusnya fungsi ini hanya melakukan
+    query data album saja. Kamu dapat membuat fungsi query songs by album id
+    di song service, lalu panggil dan gabungkan datanya pada handler. */
 
     const resultAlbum = await this._pool.query(queryAlbum);
     const resultSongs = await this._pool.query(querySongs);
