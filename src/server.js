@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
+const Jwt = require('@hapi/jwt');
 
 // albums
 const albums = require('./api/albums');
@@ -23,11 +24,35 @@ const AuthenticationsService = require('./services/postgres/AuthenticationsServi
 const TokenManager = require('./tokenize/TokenManager');
 const AuthenticationsValidator = require('./validator/authentications');
 
+// playlists
+const playlists = require('./api/playlists');
+const PlaylistsService = require('./services/postgres/PlaylistsService');
+const PlaylistsValidator = require('./validator/playlists');
+
+// playlist_songs
+const playlist_songs = require('./api/playlist_songs');
+const PlaylistSongsService = require('./services/postgres/PlaylistSongsService');
+const PlaylistSongValidator = require('./validator/playlist_songs');
+
+// collaborations
+const collaborations = require('./api/collaborations');
+const CollaborationService = require('./services/postgres/CollaborationService');
+const CollaborationValidator = require('./validator/collaborations');
+
+// playlist_activities
+// const playlist_activities = require('./api/playlist_activities');
+// const PlaylistActivitiesService = require('./services/postgres/PlaylistActivitiesService');
+// const PlaylistActivitiesValidator = require('./validator/playlist_activities');
+
 const init = async () => {
+  const playlistSongsService = new PlaylistSongsService();
   const albumsService = new AlbumsService();
   const songService = new SongService();
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
+  const collaborationService = new CollaborationService();
+  const playlistsService = new PlaylistsService(collaborationService);
+  // const playlistActivitiesService = new PlaylistActivitiesService();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -37,6 +62,29 @@ const init = async () => {
         origin: ['*'],
       },
     },
+  });
+
+  await server.register([
+    {
+      plugin: Jwt,
+    },
+  ]);
+
+  // mendefinisikan strategi autnetikasi jwt
+  server.auth.strategy('playlist_jwt', 'jwt', {
+    keys: process.env.ACCESS_TOKEN_KEY,
+    verify: {
+      aud: false,
+      iss: false,
+      sub: false,
+      maxAgeSec: process.env.ACCESS_TOKEN_AGE,
+    },
+    validate: (artifacts) => ({
+      isValid: true,
+      credentials: {
+        id: artifacts.decoded.payload.id,
+      },
+    }),
   });
 
   await server.register([
@@ -70,6 +118,40 @@ const init = async () => {
         validator: AuthenticationsValidator,
       },
     },
+    {
+      plugin: playlists,
+      options: {
+        service: playlistsService,
+        validator: PlaylistsValidator,
+      },
+    },
+    {
+      plugin: playlist_songs,
+      options: {
+        playlistSongsService,
+        songService,
+        playlistsService,
+        // playlistActivitiesService,
+        validator: PlaylistSongValidator,
+      },
+    },
+    {
+      plugin: collaborations,
+      options: {
+        collaborationService,
+        playlistsService,
+        usersService,
+        validator: CollaborationValidator,
+      },
+    },
+    /* {
+      plugin: playlist_activities,
+      options: {
+        playlistActivitiesService,
+        playlistsService,
+        validator: PlaylistActivitiesValidator,
+      },
+    }, */
   ]);
 
   await server.start();

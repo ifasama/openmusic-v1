@@ -15,12 +15,6 @@ exports.up = (pgm) => {
     owner: {
       type: 'TEXT',
       notNull: true,
-      constraint: {
-        foreignKeys: {
-          column: 'owner',
-          references: 'users(id)',
-        },
-      },
     },
   });
 
