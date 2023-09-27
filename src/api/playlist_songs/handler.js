@@ -26,9 +26,9 @@ class PlaylistSongHandler {
       const { playlistId } = req.params;
       const { songId } = req.payload;
       await this._songService.verifySong(songId);
+      // console.log(credentialId, playlistId, songId);
 
-      await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
-      await this._playlistSongsService.addPlaylistSong(playlistId, songId);
+      await this._playlistSongsService.addPlaylistSong(playlistId, songId, credentialId);
       // await this._playlistsService.addPlaylistActivities(playlistId,
       // songId, credentialId, 'add');
 
@@ -62,10 +62,9 @@ class PlaylistSongHandler {
   async getPlaylistSongHandler(req, h) {
     try {
       const { playlistId } = req.params;
-      const { id: credentialId } = req.auth.credentials;
-      await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
+      const { id: userId } = req.auth.credentials;
       const playlist = await this._playlistsService.getPlaylistById(playlistId);
-      const songs = await this._playlistSongsService.getAllPlaylistSongs(playlistId);
+      const output = await this._playlistSongsService.getAllPlaylistSongs(playlistId, userId);
 
       // playlist.songs = songs;
       // console.log(songs);
@@ -75,7 +74,7 @@ class PlaylistSongHandler {
         data: {
           playlist: {
             ...playlist,
-            songs,
+            songs: output,
           },
         },
       };
@@ -104,12 +103,10 @@ class PlaylistSongHandler {
     try {
       this._validator.validatePlaylistSongPayload(req.payload);
       const { songId } = req.payload;
-      await this._songService.verifySong(songId);
       const { id: credentialId } = req.auth.credentials;
       const { playlistId } = req.params;
 
-      await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
-      await this._playlistSongsService.deletePlaylistSong(playlistId, songId);
+      await this._playlistSongsService.deletePlaylistSong(playlistId, songId, credentialId);
       // await this._playlistService.addPlaylistActivities(playlistId,
       // songId, credentialId, 'delete');
 

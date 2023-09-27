@@ -11,7 +11,7 @@ class PlaylistsService {
     this._collaborationService = collaborationService;
   }
 
-  async addPlaylist({ name, owner }) {
+  async addPlaylist(name, owner) {
     const id = `playlist-${nanoid(16)}`;
 
     const query = {
@@ -21,7 +21,6 @@ class PlaylistsService {
 
     const result = await this._pool.query(query);
 
-    console.log(`addPlaylist: ${result.rows[0].id}`);
     if (!result.rows[0].id) {
       throw new InvariantError('Playlist gagal ditambahkan');
     }
@@ -31,13 +30,16 @@ class PlaylistsService {
   async getPlaylists(owner) {
     const query = {
       text: `SELECT playlists.id, playlists.name, users.username
-      FROM playlists JOIN
+      FROM playlists INNER JOIN
       users ON playlists.owner = users.id
-      WHERE playlists.owner = $1`,
+      LEFT JOIN collaborations ON collaborations.playlist_id = playlists.id
+      WHERE playlists.owner = $1 OR collaborations.user_id = $1`,
       values: [owner],
     };
 
     const result = await this._pool.query(query);
+    // const resultString = JSON.stringify(result);
+    // console.log(`getPlaylist: ${resultString.rows}`);
     return result.rows;
   }
 
@@ -51,6 +53,7 @@ class PlaylistsService {
     };
 
     const result = await this._pool.query(query);
+    // console.log(`getPlaylist: ${result.rows[0]}`);
     return result.rows[0];
   }
 
