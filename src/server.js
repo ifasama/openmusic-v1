@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
+const ClientError = require('./exceptions/ClientError');
 
 // albums
 const albums = require('./api/albums');
@@ -40,9 +41,8 @@ const CollaborationService = require('./services/postgres/CollaborationService')
 const CollaborationValidator = require('./validator/collaborations');
 
 // playlist_activities
-// const playlist_activities = require('./api/playlist_activities');
-// const PlaylistActivitiesService = require('./services/postgres/PlaylistActivitiesService');
-// const PlaylistActivitiesValidator = require('./validator/playlist_activities');
+const playlist_activities = require('./api/playlist_activities');
+const PlaylistActivitiesService = require('./services/postgres/PlaylistActivitiesService');
 
 const init = async () => {
   const albumsService = new AlbumsService();
@@ -52,7 +52,7 @@ const init = async () => {
   const collaborationService = new CollaborationService();
   const playlistsService = new PlaylistsService(collaborationService);
   const playlistSongsService = new PlaylistSongsService(playlistsService);
-  // const playlistActivitiesService = new PlaylistActivitiesService();
+  const playlistActivitiesService = new PlaylistActivitiesService();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -131,7 +131,7 @@ const init = async () => {
         playlistSongsService,
         songService,
         playlistsService,
-        // playlistActivitiesService,
+        playlistActivitiesService,
         validator: PlaylistSongValidator,
       },
     },
@@ -144,15 +144,47 @@ const init = async () => {
         validator: CollaborationValidator,
       },
     },
-    /* {
+    {
       plugin: playlist_activities,
       options: {
         playlistActivitiesService,
         playlistsService,
-        validator: PlaylistActivitiesValidator,
       },
-    }, */
+    },
   ]);
+
+  server.ext('onPreResponse', (req, h) => {
+    // mendapatkan konteks response dari request
+    const { response } = req;
+
+    if (response instanceof Error) {
+      // penanganan client error secara internal
+      if (response instanceof ClientError) {
+        const newRes = h.response({
+          status: 'fail',
+          message: response.message,
+        });
+        newRes.code(response.statusCode);
+        return newRes;
+      }
+
+      // mempertahankan penanganan client error oleh hapi secara native, seperti 404 etc.
+      if (!response.isServer) {
+        return h.continue;
+      }
+
+      // SERVER ERROR sesuai kebutuhan
+      const newRes = h.response({
+        status: 'error',
+        message: 'Maaf ada gangguan pada server kami',
+      });
+      newRes.code(500);
+      return newRes;
+    }
+
+    // jika bukan error, lanjutkan dengan response sebelumnya tanpa terintervensi.
+    return h.continue;
+  });
 
   await server.start();
   console.log(`Server berjalan pada ${server.info.uri}`);

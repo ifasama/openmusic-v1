@@ -16,6 +16,7 @@
   "dependencies": {
     "@hapi/hapi": "^21.1.0",
     "@hapi/jwt": "^3.2.0",
+    "auto-bind": "^4.0.0",
     "bcrypt": "^5.1.0",
     "dotenv": "^16.0.3",
     "env": "0.0.2",
@@ -23,7 +24,8 @@
     "nanoid": "^3.3.4",
     "node": "^19.3.0",
     "node-pg-migrate": "^6.2.2",
-    "pg": "^8.9.0"
+    "pg": "^8.9.0",
+    "prettier": "^3.0.3"
   },
   "devDependencies": {
     "eslint": "^8.37.0",

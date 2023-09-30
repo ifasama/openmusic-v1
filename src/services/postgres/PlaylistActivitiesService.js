@@ -1,7 +1,6 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
-const NotFoundError = require('../../exceptions/NotFoundError');
 
 class PlaylistActivitiesService {
   constructor() {
@@ -19,24 +18,24 @@ class PlaylistActivitiesService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rows[0].id) {
       throw new InvariantError('Aktivitas gagal ditambahkan');
     }
     return result.rows[0].id;
   }
 
   async getPlaylistActivities(playlistId) {
-    const query = {
-      text: 'SELECT playlist_id FROM playlist_song_activities AS pa WHERE pa.playlist_id = $1',
+    const queryUser = {
+      text: `SELECT users.username, songs.title,
+      psa.action, psa.time FROM playlist_song_activities AS psa
+      JOIN playlists ON playlists.id = psa.playlist_id
+      JOIN users ON users.id = psa.user_id
+      JOIN songs ON songs.id = psa.song_id
+      WHERE psa.playlist_id = $1`,
       values: [playlistId],
     };
-
-    const result = await this._pool.query(query);
-
-    if (!result.rows.length) {
-      throw NotFoundError('Aktivitas tidak ditemukan');
-    }
-    return result.rows;
+    const resultUser = await this._pool.query(queryUser);
+    return resultUser.rows;
   }
 }
 

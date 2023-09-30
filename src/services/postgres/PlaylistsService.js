@@ -3,7 +3,6 @@ const { nanoid } = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 const AuthorizationError = require('../../exceptions/AuthorizationError');
-// const mapDBPlaylist = require('../../utils');
 
 class PlaylistsService {
   constructor(collaborationService) {
@@ -38,8 +37,6 @@ class PlaylistsService {
     };
 
     const result = await this._pool.query(query);
-    // const resultString = JSON.stringify(result);
-    // console.log(`getPlaylist: ${resultString.rows}`);
     return result.rows;
   }
 
@@ -53,7 +50,6 @@ class PlaylistsService {
     };
 
     const result = await this._pool.query(query);
-    // console.log(`getPlaylist: ${result.rows[0]}`);
     return result.rows[0];
   }
 
@@ -83,7 +79,6 @@ class PlaylistsService {
     }
 
     const playlistOwner = result.rows[0].owner;
-
     if (playlistOwner !== owner) {
       throw new AuthorizationError('Anda tidak berhak mengakses playlist ini');
     }
@@ -93,11 +88,15 @@ class PlaylistsService {
     try {
       await this.verifyPlaylistOwner(playlistId, userId);
     } catch (error) {
-      if (!(error instanceof AuthorizationError)) {
+      if (error instanceof NotFoundError) {
         throw error;
       }
+      try {
+        await this._collaborationService.verifyCollaborator(playlistId, userId);
+      } catch {
+        throw new AuthorizationError('Anda bukan kolaborator dari playlist ini');
+      }
     }
-    await this._collaborationService.verifyCollaborator(playlistId, userId);
   }
 }
 

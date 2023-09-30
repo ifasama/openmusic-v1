@@ -1,7 +1,6 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
-// const NotFoundError = require('../../exceptions/NotFoundError');
 
 class PlaylistSongsService {
   constructor(playlistsService) {
@@ -19,19 +18,15 @@ class PlaylistSongsService {
     };
 
     const result = await this._pool.query(query);
-    // const resultString = JSON.stringify(result);
-    // console.log(`addSongPlaylist: ${resultString}`);
 
     if (!result.rowCount) {
       throw new InvariantError('Lagu gagal ditambahkan ke dalam playlist');
     }
 
-    // return result.rows[0].id;
+    return result.rows[0].id;
   }
 
-  async getAllPlaylistSongs(playlistId, userId) {
-    await this._playlistsService.verifyPlaylistAccess(playlistId, userId);
-    const playlist = await this._playlistsService.getPlaylistById(userId);
+  async getAllPlaylistSongs(playlistId) {
     const query = {
       text: `SELECT songs.id, songs.title, songs.performer
       FROM songs LEFT JOIN
@@ -41,11 +36,11 @@ class PlaylistSongsService {
     };
 
     const result = await this._pool.query(query);
-    // console.log(`getAllPlaylistSong: ${result}`);
+
     if (!result.rows.length) {
       throw new InvariantError('Gagal menemukan lagu');
     }
-    return { ...playlist, songs: result.rows };
+    return result.rows;
   }
 
   async deletePlaylistSong(playlistId, songId, userId) {
@@ -56,7 +51,6 @@ class PlaylistSongsService {
     };
 
     const result = await this._pool.query(query);
-    // console.log(`deleteAllPlaylistSong: ${result}`);
 
     if (!result.rows.length) {
       throw new InvariantError('Lagu gagal dihapus');
