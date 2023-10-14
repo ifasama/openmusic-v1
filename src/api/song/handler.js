@@ -13,13 +13,11 @@ class SongHandler {
     // katanya destructuring tidak diperlukan karena redundan dengan
     // di services, tapi saat dihilangkan, muncul problem
     // karena variable tidak diinisiasi
-    const {
+    /* const {
       title, year, performer, genre, duration, albumId,
-    } = req.payload;
+    } = req.payload; */
 
-    const songId = await this._service.addSong({
-      title, year, performer, genre, duration, albumId,
-    });
+    const songId = await this._service.addSong(req.payload);
 
     const res = h.response({
       status: 'success',

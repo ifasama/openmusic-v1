@@ -2,6 +2,8 @@ require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
+const path = require('path');
+const Inert = require('@hapi/inert');
 const ClientError = require('./exceptions/ClientError');
 
 // albums
@@ -44,6 +46,16 @@ const CollaborationValidator = require('./validator/collaborations');
 const playlist_activities = require('./api/playlist_activities');
 const PlaylistActivitiesService = require('./services/postgres/PlaylistActivitiesService');
 
+// exports
+const _exports = require('./api/v3/exports');
+const ProduceService = require('./services/rabbitmq/ProduceService');
+const ExportValidator = require('./validator/v3/exports');
+
+// uploads
+const uploads = require('./api/uploads');
+const StorageService = require('./services/storage/StorageService');
+const UploadsValidator = require('./validator/uploads');
+
 const init = async () => {
   const albumsService = new AlbumsService();
   const songService = new SongService();
@@ -53,6 +65,7 @@ const init = async () => {
   const playlistsService = new PlaylistsService(collaborationService);
   const playlistSongsService = new PlaylistSongsService(playlistsService);
   const playlistActivitiesService = new PlaylistActivitiesService();
+  const storageService = new StorageService(path.resolve(__dirname, 'api/uploads/file/covers'));
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -67,6 +80,9 @@ const init = async () => {
   await server.register([
     {
       plugin: Jwt,
+    },
+    {
+      plugin: Inert,
     },
   ]);
 
@@ -151,6 +167,21 @@ const init = async () => {
         playlistsService,
       },
     },
+    {
+      plugin: _exports,
+      options: {
+        service: ProduceService,
+        playlistsService,
+        validator: ExportValidator,
+      },
+    },
+    {
+      plugin: uploads,
+      options: {
+        service: storageService,
+        validator: UploadsValidator,
+      },
+    },
   ]);
 
   server.ext('onPreResponse', (req, h) => {
@@ -172,7 +203,7 @@ const init = async () => {
       if (!response.isServer) {
         return h.continue;
       }
-
+      console.log(response);
       // SERVER ERROR sesuai kebutuhan
       const newRes = h.response({
         status: 'error',

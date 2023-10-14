@@ -20,7 +20,6 @@ class SongService {
     };
 
     const result = await this._pool.query(query);
-    // console.log(result);
 
     if (!result.rows[0].id) {
       throw new InvariantError('lagu gagal ditambahkan');
@@ -51,7 +50,7 @@ class SongService {
         values: [`%${performer}%`],
       };
       const result = await this._pool.query(query);
-      return result.rows.map(mapDBToModel);
+      return result.rows;
     }
     const result = await this._pool.query('SELECT id, title, performer FROM songs');
     return result.rows.map(mapDBToModel);
