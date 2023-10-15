@@ -3,7 +3,7 @@ const path = require('path');
 const routes = (handler) => [
   {
     method: 'POST',
-    path: '/albums/{id}/covers',
+    path: '/albums/{albumId}/covers',
     handler: handler.postUploadCoverHandler,
     options: {
       payload: {
@@ -16,7 +16,7 @@ const routes = (handler) => [
   },
   {
     method: 'GET',
-    path: '/uploads/{param*}',
+    path: '/upload/{param*}',
     handler: {
       directory: {
         path: path.resolve(__dirname, 'file'),
