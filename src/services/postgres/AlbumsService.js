@@ -1,12 +1,12 @@
 const { Pool } = require("pg");
 const { nanoid } = require("nanoid");
-const { mapDBToModel } = require("../../utils");
 const InvariantError = require("../../exceptions/InvariantError");
 const NotFoundError = require("../../exceptions/NotFoundError");
 
 class AlbumsService {
-  constructor() {
+  constructor(cacheService) {
     this._pool = new Pool();
+    this._cacheService = cacheService;
   }
 
   async addAlbum({ name, year }) {
@@ -31,24 +31,13 @@ class AlbumsService {
       values: [id],
     };
 
-    const querySongs = {
-      text: "SELECT * FROM songs WHERE album_id = $1",
-      values: [id],
-    };
-    /* Agar code menjadi lebih clean, seharusnya fungsi ini hanya melakukan
-    query data album saja. Kamu dapat membuat fungsi query songs by album id
-    di song service, lalu panggil dan gabungkan datanya pada handler. */
+    const result = await this._pool.query(queryAlbum);
 
-    const resultAlbum = await this._pool.query(queryAlbum);
-    const resultSongs = await this._pool.query(querySongs);
-
-    if (!resultAlbum.rows.length) {
+    if (!result.rows.length) {
       throw new NotFoundError("album tidak ditemukan");
     }
-    return {
-      ...resultAlbum.rows[0],
-      songs: resultSongs.rows.map(mapDBToModel),
-    };
+    const resultAlbum = result.rows[0];
+    return resultAlbum;
   }
 
   async editAlbumById(id, { name, year }) {

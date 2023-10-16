@@ -1,17 +1,15 @@
 const autoBind = require('auto-bind');
 
 class LikesHandler {
-  constructor(service, usersService, albumsService, validator) {
+  constructor(service, usersService, albumsService) {
     this._service = service;
     this._usersService = usersService;
     this._albumsService = albumsService;
-    this._validator = validator;
 
     autoBind(this);
   }
 
   async postLikesHandler(req, h) {
-    // this._validator.validateLikesPayload(req.payload);
     const { id: user } = req.auth.credentials;
     const { albumId } = req.params;
 
@@ -27,18 +25,20 @@ class LikesHandler {
     return res;
   }
 
-  async getLikesHandler(req) {
+  async getLikesHandler(req, h) {
     const { albumId } = req.params;
 
-    // await this._albumsService.getAlbumId(albumId);
-    const number = await this._service.getLikes(albumId);
+    const { number, cache } = await this._service.getLikes(albumId);
 
-    return {
+    const res = h.response({
       status: 'success',
       data: {
         likes: number,
       },
-    };
+    });
+    res.code(200);
+    if (cache) return res.header('X-Data-Source', 'cache');
+    return res;
   }
 
   async deleteLikesHandler(req) {

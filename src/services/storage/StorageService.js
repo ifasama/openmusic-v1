@@ -32,7 +32,6 @@ class StorageService {
     };
 
     const result = await this._pool.query(query);
-    console.log(`coverResult: ${result.rows[0].id}`);
 
     if (!result.rows.length) {
       throw new InvariantError('Cover album gagal ditambahkan');

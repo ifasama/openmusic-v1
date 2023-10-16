@@ -21,8 +21,8 @@ class ExportHandler {
     // const output = await this._playlistSongsService.getAllPlaylistSongs(playlistId);
 
     // console.log(`email: ${targetEmail}`);
-    console.log(`playlist: ${playlistId}`);
-    console.log(`userId: ${user}`);
+    // console.log(`playlist: ${playlistId}`);
+    // console.log(`userId: ${user}`);
 
     const message = {
       playlistId,

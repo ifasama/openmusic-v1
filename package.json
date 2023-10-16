@@ -27,7 +27,8 @@
     "node": "^19.3.0",
     "node-pg-migrate": "^6.2.2",
     "pg": "^8.11.3",
-    "prettier": "^3.0.3"
+    "prettier": "^3.0.3",
+    "redis": "^4.6.10"
   },
   "devDependencies": {
     "eslint": "^8.37.0",

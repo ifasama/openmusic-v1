@@ -2,4 +2,4 @@ node_modules
 .env
 .prod.env
 src/services/inMemory
-src/api/uploads/file
+src/api/v3/uploads/file

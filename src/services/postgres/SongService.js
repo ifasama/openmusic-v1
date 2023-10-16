@@ -70,6 +70,16 @@ class SongService {
     return result.rows.map(mapDBToModel)[0];
   }
 
+  async getSongsByAlbumId(albumId) {
+    const querySongs = {
+      text: 'SELECT id, title, performer FROM songs WHERE album_id = $1',
+      values: [albumId],
+    };
+
+    const resultSongs = await this._pool.query(querySongs);
+    return resultSongs.rows.map(mapDBToModel);
+  }
+
   async editSongById(id, {
     title, year, performer, genre, duration, albumId,
   }) {
